@@ -1,12 +1,44 @@
-const express = require('express')
-const app = express()
+///////////////////////////
+// Environmental Variables
+///////////////////////////
+require("dotenv").config();
+const { PORT = 3000, NODE_ENV = "development" } = process.env;
 
-// Add the middleware code needed to accept incoming data and add it to req.body
+//MONGO CONNECTION
+const mongoose = require("./DB/conn");
 
-const cookbookRouter = require('./controllers/cookbookRoutes')
-app.use('/api/cookbooks/', cookbookRouter)
+//CORS
+const cors = require("cors");
+const corsOptions = require("./configs/cors.js");
 
-const authorRouter = require('./controllers/authorRoutes')
-app.use('/api/authors/', authorRouter)
+//Bringing in Express
+const express = require("express");
+const app = express();
 
-app.listen(4000, () => console.log('Server running on port 4000!'))
+//OTHER IMPORTS
+const morgan = require("morgan");
+const dogRouter = require("./controllers/dog");
+
+////////////
+//MIDDLEWARE
+////////////
+NODE_ENV === "production" ? app.use(cors(corsOptions)) : app.use(cors());
+app.use(express.json());
+app.use(morgan("tiny")); //logging
+
+///////////////
+//Routes and Routers
+//////////////
+
+//Route for testing server is working
+app.get("/", (req, res) => {
+  res.json({ hello: "Hello World!" });
+});
+
+// Dog Routes send to dog router
+app.use("/dog", dogRouter);
+
+//LISTENER
+app.listen(PORT, () => {
+  console.log(`Your are listening on port ${PORT}`);
+});
